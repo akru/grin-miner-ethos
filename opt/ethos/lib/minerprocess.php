@@ -270,6 +270,12 @@ $pool_syntax = array(
     "http"=>"%s",
     ""=>"%s"
   ),
+  "gminer"=>array(
+    "ssl"=>"%s",
+    "stratum+tcp"=>"%s",
+    "http"=>"%s",
+    ""=>"%s"
+  ),
   "default"=>array(
     "ssl"=>"ssl://%s",
     "stratum+tcp"=>"stratum+tcp://%s",
@@ -300,6 +306,10 @@ function setup_pools($miner)
 
     case "grin-miner":
 	$miner_syntax = "grin-miner";
+	break;
+
+    case "gminer":
+	$miner_syntax = "gminer";
 	break;
 	}
 
@@ -681,6 +691,15 @@ function start_miner()
                 file_put_contents("/home/ethos/.grin/grin-miner.toml",$config_string);
         }
 
+        /*******************************
+        *  Grin gminer
+        ********************************/
+        if (preg_match("/gminer/",$miner)){
+                $maxtemp = trim(shell_exec("/opt/ethos/sbin/ethos-readconf maxtemp"));
+                if ($maxtemp == "") {
+                        $maxtemp = "85";
+                }
+        }
 	/*******************************
 	*  CGMINER-SKEIN/SGMINER-GM/SGMINER-GM-XMR
 	********************************/
@@ -1130,6 +1149,7 @@ function start_miner()
 	$miner_path['ewbf-equihash'] = "/usr/bin/screen -c /opt/ethos/etc/screenrc.ewbf-equihash -l -L -dmS ewbf-equihash /opt/miners/ewbf-equihash/ewbf-equihash";
 	$miner_path['lolminer'] = "/usr/bin/screen -c /opt/ethos/etc/screenrc.lolminer -l -L -dmS lolminer /opt/miners/lolminer/lolMiner";
 	$miner_path['grin-miner'] = "/usr/bin/screen -c /opt/ethos/etc/screenrc.grin-miner -l -L -dmS grin-miner /opt/miners/grin-miner/grin-miner";
+	$miner_path['gminer'] = "/usr/bin/screen -c /opt/ethos/etc/screenrc.gminer -l -L -dmS gminer /opt/miners/gminer/gminer";
 		
 			
 	$start_miners = select_gpus();
@@ -1188,6 +1208,7 @@ function start_miner()
 		$miner_suffix['teamredminer'] = " " . $mine_with . " " . $extraflags;
 		$miner_suffix['lolminer'] = "";
 		$miner_suffix['grin-miner'] = "";
+        $miner_suffix['gminer'] = " --algo grin29 --server $proxypool1 --user $proxywallet --pass $poolpass1";
 		
 		$command = "su - ethos -c \"" . escapeshellcmd($miner_path[$miner] . " " . $miner_params[$miner]) . " $miner_suffix[$miner]\"";
 		$command = str_replace('\#',"#",$command);
